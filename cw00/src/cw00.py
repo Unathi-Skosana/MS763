@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from scipy.stats import uniform, expon,\
         bernoulli, cauchy, rayleigh, norm
 
+# Typesetting to latex for matplotlib
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 
@@ -66,7 +67,7 @@ def rayleigh_rvs(size):
     rvs = np.zeros(size)
     for i in range(size):
         r = rand()
-        rvs[i] = np.sqrt(- 2.0 * np.log(r))
+        rvs[i] = np.sqrt(-2.0 * np.log(r))
     return rvs
 
 
@@ -87,7 +88,7 @@ def cmp_hist(v, w, v_label, w_label):
     '''
 
     n = len(v)
-    width = 0.35 # width of each bar
+    width = 0.25
     x = np.arange(n)
     fig, ax = plt.subplots()
     v_bars = ax.bar(x - width / 2, v, width, label=v_label)
@@ -111,11 +112,11 @@ def cmp_hist(v, w, v_label, w_label):
     autolabel(w_bars)
 
     fig.tight_layout()
-    plt.savefig("../img/bincounts")
+    plt.savefig("../img/bincounts.png")
     plt.close()
 
 
-def cmp_rvs(sample, xs, pdf, label, xlims=(0,1), ylims=(0,1), bins=10,
+def cmp_rvs(sample, xs, pdf, label, filename, xlims=(0,1), ylims=(0,1), bins=10,
         pmf=False, density=True):
     fig, ax = plt.subplots()
     plt.xlim(xlims[0], xlims[1])
@@ -141,28 +142,28 @@ def cmp_rvs(sample, xs, pdf, label, xlims=(0,1), ylims=(0,1), bins=10,
 
 
     fig.tight_layout()
-    plt.savefig("../img/" + label)
+    plt.savefig("../img/" + filename + ".png")
     plt.close()
 
 
 if __name__ == '__main__':
 
     # Q8
-    v = norm.rvs(loc=0, scale=1.0, size=100)
-    n = 10
+    v = norm.rvs(loc=-5, scale=1.0, size=10000)
+    bins = 50
     a, b = min(v), max(v)
-    my_bins = hist(v, a, b, n)
-    np_bins,_ = np.histogram(v, bins=10, density=False, range=(a, b))
+    my_bins = hist(v, a, b, bins)
+    np_bins,_ = np.histogram(v, bins=bins, density=False, range=(a, b))
     cmp_hist(my_bins, np_bins, "hist", 'np.histogram')
 
 
     # Q9
 
-    sz = 100000
-    bins = 100
-    lam = 0.4
-    sig = 0.5
-    p = 0.3
+    sz = 200000
+    bins = 80
+    lam = 0.27
+    sig = 0.3
+    p = 0.1
 
 
     xs = np.linspace(bernoulli.ppf(0.01, p),bernoulli.ppf(0.99, p), sz)
@@ -170,9 +171,9 @@ if __name__ == '__main__':
     bernoulli_theory = bernoulli.pmf(xs, p)
 
 
-    cmp_rvs(bernoulli_sample, xs, bernoulli_theory, r'Bernoulli with $p = \
-            {}$'.format(p), pmf=True,
-            density=False, ylims=(0, 1))
+    cmp_rvs(bernoulli_sample, xs, bernoulli_theory,
+            r'Bernoulli with $p = {}$'.format(p),"bernoulli",
+            pmf=True, density=False, ylims=(0, 1))
 
 
     xs = np.linspace(uniform.ppf(0.01, loc=-1,
@@ -181,9 +182,8 @@ if __name__ == '__main__':
     uniform_theory = uniform.pdf(xs, loc=-1, scale=2)
 
 
-    cmp_rvs(uniform_sample, xs, uniform_theory, r'Shifted uniform $\in \
-            (-1,1)$', xlims=(-1,
-        1), ylims=(0, 1.0), bins=bins)
+    cmp_rvs(uniform_sample, xs, uniform_theory, r'Shifted uniform $\in (-1,1)$',
+            "shifted_uniform", xlims=(-1,1), ylims=(0, 1.0), bins=bins)
 
     xs = np.linspace(expon.ppf(0.01, scale=1.0/lam), expon.ppf(0.99,
         scale=1.0/lam), sz)
@@ -191,9 +191,8 @@ if __name__ == '__main__':
     expon_theory = expon.pdf(xs, scale=1.0/lam)
 
 
-    cmp_rvs(expon_sample, xs, expon_theory, r'Exponential with $\lambda = \
-            {}$'.format(lam), xlims=(0, max(xs)),
-            bins=bins)
+    cmp_rvs(expon_sample, xs, expon_theory, r'Exponential with $\lambda = {}$'.format(lam)
+            ,"expon",xlims=(0, max(xs)),bins=bins)
 
     xs = np.linspace(cauchy.ppf(0.01, scale=sig), cauchy.ppf(0.99,
         scale=sig), sz)
@@ -202,25 +201,24 @@ if __name__ == '__main__':
     cauchy_theory = cauchy.pdf(xs, scale=sig)
 
 
-    cmp_rvs(cauchy_sample, xs, cauchy_theory, r'Cauchy with $\sigma = \
-            {}$'.format(sig), xlims=(-10, 10),
-            bins=bins)
+    cmp_rvs(cauchy_sample, xs, cauchy_theory, r'Cauchy with $\sigma = {}$'.format(sig)
+            ,"cauchy",xlims=(-10, 10),bins=bins)
 
 
     xs = np.linspace(rayleigh.ppf(0.0), rayleigh.ppf(0.99), sz)
     rayleigh_sample = rayleigh_rvs(sz)
     rayleigh_theory = rayleigh.pdf(xs)
 
-    cmp_rvs(rayleigh_sample, xs, rayleigh_theory, 'Rayleigh', xlims=(0,
-        max(xs)), bins=bins)
+    cmp_rvs(rayleigh_sample, xs, rayleigh_theory, 'Rayleigh', "rayleigh"
+            ,xlims=(0,max(xs)), bins=bins)
 
     # Q10
 
     fig, ax = plt.subplots()
 
-    mu = 0.0
-    sig = 1.0
-    sz = 5000
+    mu = 0.9879
+    sig = 0.45
+    sz = 50000
     bins = 100
 
     xs = np.linspace(-20, 20, sz)
@@ -233,27 +231,27 @@ if __name__ == '__main__':
         mu))
     ax.legend(loc='best', frameon=False)
     fig.tight_layout()
-    plt.savefig("../img/box_muller")
+    plt.savefig("../img/box_muller.png")
     plt.close()
 
     # Q11
-    sz = 10000
-    lam = 0.5
+    sz = 100000
+    lam = 0.32784
     sample = expon_rvs(sz, lam=lam)
     average = 1.0 / np.mean(sample)
     print('Estimated mean : {:4f} \nTrue mean : {:4f}'.format(average, lam))
 
-    #Q12
+    # Q12
 
     hits = 0
     miss = 0
     val = 0.0
     val2 = 0.0
     runs = 90000
-    step = 1000
+    step = 1000 # Skipping some values otherwise errorbars become to condensed
     est = np.zeros(runs)
     dev = np.zeros(runs)
-    xs= [i for i in range(runs)]
+    xs = np.arange(runs)
 
     for i in range(runs):
         x = -1 + 2 * rand()
@@ -279,7 +277,7 @@ if __name__ == '__main__':
     ax.set_xlabel('Sample size')
     ax.set_ylabel('Estimate')
     ax.set_title(r'Monte carlo estimation of $\pi$')
-    plt.savefig("../img/monte_carlo_pi")
+    plt.savefig("../img/monte_carlo_pi.png")
     plt.close()
 
 
